@@ -83,10 +83,32 @@
           cropViewController.aspectRatioLockEnabled = YES;
       }
       
-      [_viewController presentViewController:cropViewController animated:YES completion:nil];
+      //[_viewController presentViewController:cropViewController animated:YES completion:nil];
+      //现有app混入Flutter时候，调用上面的方法无法打开裁剪
+      [[self viewControllerWithWindow:nil] presentViewController:cropViewController
+         animated:YES
+       completion:nil];
   } else {
       result(FlutterMethodNotImplemented);
   }
+}
+
+- (UIViewController *)viewControllerWithWindow:(UIWindow *)window {
+  UIWindow *windowToUse = window;
+  if (windowToUse == nil) {
+    for (UIWindow *window in [UIApplication sharedApplication].windows) {
+      if (window.isKeyWindow) {
+        windowToUse = window;
+        break;
+      }
+    }
+  }
+
+  UIViewController *topController = windowToUse.rootViewController;
+  while (topController.presentedViewController) {
+    topController = topController.presentedViewController;
+  }
+  return topController;
 }
 
 - (void)setupUiCustomizedOptions:(id)options forViewController:(TOCropViewController*)controller {
